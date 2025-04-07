@@ -123,21 +123,48 @@ API documentation is available at `/api-docs` when the server is running. It pro
 
 - `POST /api/upload/:taskId` - Upload image for a task
 
-## Testing
+### Unit Tests
 
-Run tests with:
-```
+To run the unit tests for the application:
+
+```bash
 npm test
 ```
 
-The test suite includes unit and integration tests for:
-- Authentication
-- Task management
-- Task assignment
-- Notifications
-- Filtering and sorting
-- Leaderboard
-- Image upload
+This will run all the test suites in the `tests` directory.
+
+### Integration Tests
+
+Integration tests verify that different components of the application work together correctly. These tests simulate real-world usage scenarios and test the entire API from end to end.
+
+To run the integration tests:
+
+```bash
+npm test -- tests/integration/api.test.js
+```
+
+The integration tests cover:
+
+- Complete task lifecycle (create, update, assign, complete, delete)
+- Notification system functionality
+- Leaderboard features
+- Filtering and sorting capabilities
+- Admin-specific functionality
+- Error handling and edge cases
+- Authentication validation
+
+#### Setting Up for Integration Tests
+
+Before running integration tests, ensure:
+
+1. MongoDB is running locally
+2. The environment variables are properly set up (see `.env.example`)
+3. The uploads directory exists:
+
+```bash
+mkdir -p uploads
+```
+
 
 ## Design Decisions
 
