@@ -1,5 +1,12 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, '../../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Set storage engine
 const storage = multer.diskStorage({
@@ -23,7 +30,8 @@ const fileFilter = (req, file, cb) => {
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb(new Error('Error: Images Only!'));
+    // This will prevent multer from accepting the file but won't crash the request
+    return cb(null, false);
   }
 };
 

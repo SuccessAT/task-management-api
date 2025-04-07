@@ -12,29 +12,21 @@ const buildSortQuery = (req) => {
         sortQuery = '-dueDate'; // Descending due date (latest first)
         break;
       case 'priority':
-        // Custom priority sort (High > Medium > Low)
         sortQuery = { 
-          $function: {
-            body: `function(a, b) {
-              const priorityOrder = { 'High': 1, 'Medium': 2, 'Low': 3 };
-              return priorityOrder[a.priority] - priorityOrder[b.priority];
-            }`,
-            args: [],
-            lang: "js"
-          }
+          $sort: { 
+            priority: { 
+              $indexOfArray: [['High', 'Medium', 'Low'], '$priority'] 
+            } 
+          } 
         };
         break;
       case '-priority':
-        // Custom priority sort (Low > Medium > High)
         sortQuery = { 
-          $function: {
-            body: `function(a, b) {
-              const priorityOrder = { 'High': 1, 'Medium': 2, 'Low': 3 };
-              return priorityOrder[b.priority] - priorityOrder[a.priority];
-            }`,
-            args: [],
-            lang: "js"
-          }
+          $sort: { 
+            priority: { 
+              $multiply: [{ $indexOfArray: [['High', 'Medium', 'Low'], '$priority'] }, -1] 
+            } 
+          } 
         };
         break;
       default:

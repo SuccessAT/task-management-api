@@ -1,7 +1,12 @@
 require('dotenv').config();
+const { validateEnv } = require('./config/env');
+validateEnv();
+
+
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const { errorHandler } = require('./middleware/errorHandler');
 
 // Connect to database
 connectDB();
@@ -31,14 +36,14 @@ app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Task Management API' });
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    message: 'Server Error'
-  });
+// Handle 404 errors for undefined routes
+app.use((req, res, next) => {
+  const { NotFoundError } = require('./utils/errors/AppError');
+  next(new NotFoundError('Route not found'));
 });
+
+// Error handling middleware
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 

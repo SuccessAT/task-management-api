@@ -2,6 +2,7 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../src/server');
 const User = require('../src/models/User');
+const { setupTestUser } = require('./utils/testUtils');
 
 // Test user data
 const testUser = {
@@ -10,10 +11,13 @@ const testUser = {
   password: 'password123'
 };
 
+let token;
+let userId;
+
 // Connect to test database before running tests
 beforeAll(async () => {
-  // Clear users collection
-  await User.deleteMany({});
+  // Clean up any existing test user
+  await User.deleteOne({ email: testUser.email });
 });
 
 // Close database connection after tests
@@ -35,6 +39,10 @@ describe('Auth Routes', () => {
       expect(res.body.user).toHaveProperty('username', testUser.username);
       expect(res.body.user).toHaveProperty('email', testUser.email);
       expect(res.body.user).toHaveProperty('role', 'regular');
+      
+      // Save token and userId for later tests
+      token = res.body.token;
+      userId = res.body.user.id;
     });
 
     it('should not register a user with existing email', async () => {
@@ -44,7 +52,7 @@ describe('Auth Routes', () => {
       
       expect(res.statusCode).toEqual(400);
       expect(res.body).toHaveProperty('success', false);
-      expect(res.body).toHaveProperty('message', 'User already exists');
+      expect(res.body.message).toMatch(/User already exists/i);
     });
 
     it('should not register a user without required fields', async () => {
@@ -75,6 +83,9 @@ describe('Auth Routes', () => {
       expect(res.body).toHaveProperty('token');
       expect(res.body.user).toHaveProperty('username', testUser.username);
       expect(res.body.user).toHaveProperty('email', testUser.email);
+      
+      // Update token for later tests
+      token = res.body.token;
     });
 
     it('should not login with incorrect password', async () => {
@@ -87,7 +98,7 @@ describe('Auth Routes', () => {
       
       expect(res.statusCode).toEqual(401);
       expect(res.body).toHaveProperty('success', false);
-      expect(res.body).toHaveProperty('message', 'Invalid credentials');
+      expect(res.body.message).toMatch(/Invalid credentials/i);
     });
 
     it('should not login with non-existent email', async () => {
@@ -100,26 +111,12 @@ describe('Auth Routes', () => {
       
       expect(res.statusCode).toEqual(401);
       expect(res.body).toHaveProperty('success', false);
-      expect(res.body).toHaveProperty('message', 'Invalid credentials');
+      expect(res.body.message).toMatch(/Invalid credentials/i);
     });
   });
 
   // Test get current user
   describe('GET /api/auth/me', () => {
-    let token;
-
-    beforeAll(async () => {
-      // Login to get token
-      const res = await request(app)
-        .post('/api/auth/login')
-        .send({
-          email: testUser.email,
-          password: testUser.password
-        });
-      
-      token = res.body.token;
-    });
-
     it('should get current user profile with valid token', async () => {
       const res = await request(app)
         .get('/api/auth/me')

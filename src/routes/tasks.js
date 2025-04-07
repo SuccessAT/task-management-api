@@ -10,6 +10,7 @@ const {
   assignTask
 } = require('../controllers/tasks');
 const { protect, authorize } = require('../middleware/auth');
+const { handleValidationErrors } = require('../middleware/errorHandler');
 
 const router = express.Router();
 
@@ -22,7 +23,8 @@ router.post(
   [
     check('title', 'Title is required').not().isEmpty(),
     check('description', 'Description is required').not().isEmpty(),
-    check('dueDate', 'Due date is required').not().isEmpty()
+    check('dueDate', 'Due date is required').not().isEmpty(),
+    handleValidationErrors
   ],
   createTask
 );
@@ -40,9 +42,24 @@ router.put('/:id', updateTask);
 router.delete('/:id', deleteTask);
 
 // Update task status
-router.patch('/:id/status', updateTaskStatus);
+router.patch(
+  '/:id/status',
+  [
+    check('status', 'Status is required').isIn(['To Do', 'In Progress', 'Completed']),
+    handleValidationErrors
+  ],
+  updateTaskStatus
+);
 
 // Assign task to users
-router.post('/:id/assign', assignTask);
+router.post(
+  '/:id/assign',
+  [
+    check('userIds', 'User IDs array is required').isArray(),
+    check('userIds.*', 'Invalid user ID').isMongoId(),
+    handleValidationErrors
+  ],
+  assignTask
+);
 
 module.exports = router;

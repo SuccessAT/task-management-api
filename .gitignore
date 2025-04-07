@@ -1,71 +1,65 @@
-# Dependencies
+# Node.js dependencies
 node_modules/
-.pnp/
-.pnp.js
-
-# Testing
-coverage/
-
-# Production
-build/
-dist/
-out/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
 
 # Environment variables
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.development
+.env.test
+.env.production
+
+# Build output
+dist/
+build/
+out/
 
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output/
+
+# IDE and editor files
 .idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# System Files
+.vscode/
+*.swp
+*.swo
 .DS_Store
-Thumbs.db
+*.sublime-project
+*.sublime-workspace
 
-# Debug
-.debugger/
+# Uploaded files
+uploads/*
+!uploads/.gitkeep
 
-# TypeScript
-*.tsbuildinfo
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Frontend specific
-/frontend/.vite/
-/frontend/dist/
-/frontend/build/
-
-# Backend specific
-/task-management-api/uploads/*
-!/task-management-api/uploads/.gitkeep
-
-# Development database
-*.sqlite
-*.sqlite3
+# MongoDB data
+data/
+*.dump
 
 # Temporary files
-*.tmp
-*.temp
-.cache/
+tmp/
+temp/
+
+# Debug files
+.node_repl_history
+.eslintcache
+
+# Test files
+test-image.jpg
+test-file.txt

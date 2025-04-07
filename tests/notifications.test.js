@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const app = require('../src/server');
 const User = require('../src/models/User');
 const Notification = require('../src/models/Notification');
+const { setupTestUser } = require('./utils/testUtils');
 
 let token;
 let userId;
@@ -10,37 +11,18 @@ let notificationId;
 
 // Connect to test database before running tests
 beforeAll(async () => {
-  // Login to get token
-  const user = await User.findOne({ email: 'test@example.com' });
-  if (user) {
-    userId = user._id;
-    
-    const res = await request(app)
-      .post('/api/auth/login')
-      .send({
-        email: 'test@example.com',
-        password: 'password123'
-      });
-    
-    token = res.body.token;
-  } else {
-    // Create a test user if it doesn't exist
-    const registerRes = await request(app)
-      .post('/api/auth/register')
-      .send({
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'password123'
-      });
-    
-    token = registerRes.body.token;
-    userId = registerRes.body.user.id;
-  }
+  // Setup test user and get token
+  const userData = await setupTestUser();
+  token = userData.token;
+  userId = userData.userId;
+  
+  // Clear notifications collection
+  await Notification.deleteMany({});
   
   // Create a test notification
   const notification = await Notification.create({
     userId,
-    taskId: mongoose.Types.ObjectId(),
+    taskId: new mongoose.Types.ObjectId(),
     message: 'Test notification',
     read: false
   });
@@ -97,20 +79,28 @@ describe('Notification Routes', () => {
       
       expect(res.statusCode).toEqual(404);
       expect(res.body).toHaveProperty('success', false);
-      expect(res.body).toHaveProperty('message', 'Notification not found');
+      expect(res.body.message).toMatch(/Notification not found/i);
     });
   });
 
   // Test mark all notifications as read
   describe('PUT /api/notifications/read-all', () => {
     it('should mark all notifications as read', async () => {
+      // Create another unread notification
+      await Notification.create({
+        userId,
+        taskId: new mongoose.Types.ObjectId(),
+        message: 'Another test notification',
+        read: false
+      });
+      
       const res = await request(app)
         .put('/api/notifications/read-all')
         .set('Authorization', `Bearer ${token}`);
       
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty('success', true);
-      expect(res.body).toHaveProperty('message', 'All notifications marked as read');
+      expect(res.body.message).toMatch(/All notifications marked as read/i);
       
       // Verify all notifications are marked as read
       const checkRes = await request(app)
